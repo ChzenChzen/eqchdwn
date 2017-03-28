@@ -1,5 +1,5 @@
 from xlrd import open_workbook
-import pandas as pd
+from pandas import DataFrame
 
 file_name = "input.xlsx"
 
@@ -23,7 +23,7 @@ def convert_xlsx_to_dataframe(file):
             hands_realize_list.append(round(hand_realize_value))
             data['hands'] = hands_list
             data['hands_realize'] = hands_realize_list
-    return pd.DataFrame(data)
+    return DataFrame(data)
 
 
 def realize_report(x, y, dataframe):
