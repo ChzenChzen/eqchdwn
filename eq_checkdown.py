@@ -23,12 +23,10 @@ def slice_data_to_report(from_eq, to_eq, dataframe_name):
 
 def output(dataframe_name, pace):
     """Iterates through all data and save final report to txt file"""
-    output_file_name = "output.txt"
     biggest_eq_realization = int(max(dataframe_name[" Equity Realization"]))
     steps = range(0, biggest_eq_realization, pace)
-    with open(output_file_name, 'w') as outfile:
-        for step in steps:
-            outfile.write(str(slice_data_to_report(step, step + pace, dataframe_name)) + "\n")
+    for step in steps:
+        slice_data_to_report(step, step + pace, dataframe_name)
 
 
 def loop():
