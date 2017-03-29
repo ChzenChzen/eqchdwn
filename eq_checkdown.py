@@ -1,53 +1,49 @@
-from xlrd import open_workbook
-from pandas import DataFrame
+import pandas as pd
 
-file_name = "input.xlsx"
-
-
-def convert_xlsx_to_dataframe(file):
-    """grabs data from excel file and return dataframe with two columns (hands, hands_realize)"""
-
-    hands_realize_list = []
-    hands_list = []
-    data = {}
-
-    book = open_workbook(file)
-    sheet = book.sheet_by_index(0)
-    for row in range(1, sheet.nrows):
-        if row != '':
-            hand = sheet.cell_value(row, colx=0)
-            if isinstance(hand, float):
-                hand = round(hand)
-            hand_realize_value = float(sheet.cell_value(row, colx=3))
-            hands_list.append(str(hand))
-            hands_realize_list.append(round(hand_realize_value))
-            data['hands'] = hands_list
-            data['hands_realize'] = hands_realize_list
-    return DataFrame(data)
+file_name = "input.csv"
 
 
-def realize_report(x, y, dataframe):
+def error_message():
+    print("First line in input.csv must looks like 'Hand, EV, Equity, Equity Realization, Matchups'")
+    print("input.csv must contain only header and data of one player, please check your input.csv")
+
+
+def slice_data_to_report(from_eq, to_eq, dataframe_name):
     """makes report in format avg realize and range"""
+    sliced_dataframe = dataframe_name[from_eq:to_eq]  # make new dataframe with values of Equity Realization
+    if not sliced_dataframe.empty:
+        avg_eq_realization = sum(sliced_dataframe[" Equity Realization"]) / len(
+            sliced_dataframe[" Equity Realization"])  # calculate average value of Equity Realization in this slice
+        cards_range = ""
+        for card in sliced_dataframe["Hand"]:  # do range of cards from slice
+            cards_range = cards_range + card + ","
+        print("Values between {0!s} and {1!s}. Avg eq: {2:.2f} Range: {3!s}".format(from_eq, to_eq, avg_eq_realization,
+                                                                                    cards_range[:-1]))
 
-    hands_x_y = dataframe[(dataframe.hands_realize > x) & (dataframe.hands_realize < y)]
-    if len(hands_x_y.hands_realize) != 0:
-        avg_realize = sum(hands_x_y.hands_realize) / len(hands_x_y.hands_realize)
-        cards = ""
-        for card in hands_x_y.hands:
-            cards = cards + card + ","
-        report = "avg: " + str(avg_realize) + " range: " + cards
-        return report
 
-
-def output(dataframe, pace):
-    """Iterate through all data and save final report to txt file"""
-
+def output(dataframe_name, pace):
+    """Iterates through all data and save final report to txt file"""
     output_file_name = "output.txt"
-    steps = range(0, max(dataframe.hands_realize), pace)
+    biggest_eq_realization = int(max(dataframe_name[" Equity Realization"]))
+    steps = range(0, biggest_eq_realization, pace)
     with open(output_file_name, 'w') as outfile:
         for step in steps:
-            outfile.write(str(realize_report(step, step + pace, dataframe)) + "\n")
+            outfile.write(str(slice_data_to_report(step, step + pace, dataframe_name)) + "\n")
 
 
-df = convert_xlsx_to_dataframe(file_name)
-output(df, 10)
+def loop():
+    """Dialog for enter value of pace"""
+    while True:
+        try:
+            pace = int(input("Enter pace of equity or any string for exit: "))
+        except ValueError:
+            break
+
+        df = pd.read_csv(file_name, usecols=["Hand", " Equity Realization"])
+        output(df, pace)
+
+
+try:
+    loop()
+except ValueError:
+    error_message()
