@@ -48,5 +48,6 @@ def output(dataframe, pace):
         for step in steps:
             outfile.write(str(realize_report(step, step + pace, dataframe)) + "\n")
 
+
 df = convert_xlsx_to_dataframe(file_name)
 output(df, 10)
